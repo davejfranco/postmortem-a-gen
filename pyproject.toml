@@ -4,4 +4,7 @@ version = "0.1.0"
 description = "a postmortems report generator"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "boto3>=1.39.16",
+    "slack-sdk>=3.36.0",
+]
