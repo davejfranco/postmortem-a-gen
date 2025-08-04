@@ -1,0 +1,107 @@
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+
+  name = var.project_name
+  cidr = var.vpc_cidr
+
+  azs              = var.availability_zones
+  public_subnets   = var.public_subnet_cidrs
+  private_subnets  = var.private_subnet_cidrs
+  database_subnets = var.database_subnet_cidrs
+
+  enable_nat_gateway = true
+  single_nat_gateway = true
+  enable_vpn_gateway = false
+
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  create_database_subnet_group       = true
+  create_database_subnet_route_table = true
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
+
+  public_subnet_tags = {
+    Type = "public"
+  }
+
+  private_subnet_tags = {
+    Type = "private"
+  }
+
+  database_subnet_tags = {
+    Type = "database"
+  }
+}
+
+resource "aws_ecr_repository" "this" {
+  name                 = "${var.project_name}-${var.environment}"
+  image_tag_mutability = "MUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
+}
+
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "~> 21.0"
+
+  name               = "${var.project_name}"
+  kubernetes_version = var.cluster_version
+
+  vpc_id                       = module.vpc.vpc_id
+  subnet_ids                   = module.vpc.private_subnets
+  endpoint_public_access       = true
+  endpoint_public_access_cidrs = var.allowed_cidr_blocks
+
+  addons = {
+    coredns = {
+      most_recent = true
+    }
+    kube-proxy = {
+      most_recent = true
+    }
+    vpc-cni = {
+      most_recent = true
+    }
+  }
+
+  eks_managed_node_groups = {
+    main = {
+      name = "nodes"
+
+      instance_types = var.node_group_instance_types
+
+      min_size     = var.node_group_min_size
+      max_size     = var.node_group_max_size
+      desired_size = var.node_group_desired_size
+
+      subnet_ids = module.vpc.private_subnets
+
+      tags = {
+        Environment = var.environment
+        Project     = var.project_name
+        Terraform   = "true"
+      }
+    }
+  }
+
+  tags = {
+    Environment = var.environment
+    Project     = var.project_name
+    Terraform   = "true"
+  }
+}
+
