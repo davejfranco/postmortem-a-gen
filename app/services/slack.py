@@ -1,7 +1,8 @@
-#import os
-from typing import Optional, List, Dict, Any
+# import os
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+from typing import Optional, List, Dict, Any
+from app.utils import convert_timestamp_to_readable
 
 
 class Slack:
@@ -53,4 +54,22 @@ class Slack:
             print(f"Error reading thread: {e.response['error']}")
             return None
 
+    def get_user_info(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get User information by user ID"""
+        try:
+            return self.client.users_info(user=user_id).get("user")["real_name"]
+        except SlackApiError as e:
+            print(f"Error getting user info: {e.response['error']}")
+            return "Unknown User"
 
+    def human_readable_conversation(self, slack_thread_conversion):
+        pretty_conversation = []
+
+        for msg in slack_thread_conversion:
+            pretty_msg = {}
+            pretty_msg["user"] = self.get_user_info(msg["user"])
+            pretty_msg["text"] = msg["text"]
+            pretty_msg["ts"] = convert_timestamp_to_readable(msg["ts"])
+
+            pretty_conversation.append(pretty_msg)
+        return pretty_conversation
