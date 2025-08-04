@@ -7,5 +7,10 @@ requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.39.16",
     "fastapi[standard]>=0.116.1",
+    "google-api-python-client>=2.177.0",
+    "google-auth>=2.40.3",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.2",
+    "httpx>=0.28.1",
     "slack-sdk>=3.36.0",
 ]
