@@ -64,7 +64,7 @@ class Docs:
             self.docs_service.documents().batchUpdate(
                 documentId=file_id,
                 body={'requests': request}).execute()
-            return
+            return f"https://docs.google.com/document/d/{file_id}/"
         except HttpError as error:
             print(f"An error occurred: {error}")
             return
