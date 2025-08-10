@@ -1,4 +1,5 @@
 import os
+from typing import List
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -24,7 +25,7 @@ class Docs:
         self.drive_service = build("drive", "v3", credentials=self.credentials)
         self.docs_service = build("docs", "v1", credentials=self.credentials)
 
-    def create_empty_file(self, file_name: str, folder_id: str):
+    def _create_empty_file(self, file_name: str, folder_id: str):
         """This creates an empty file for the report in the specified folder."""
         file_metadata = {
             "name": file_name,
@@ -34,16 +35,44 @@ class Docs:
 
         try:
             file = self.drive_service.files().create(body=file_metadata).execute()
+            return file.get("id")
         except HttpError as error:
             print(f"An error occurred: {error}")
-            return None
+            return
 
-        return file.get("id")
 
-    def clean_files(self):
-        results = self.drive_service.files().list(q="'me' in owners").execute()
-        files = results.get("files", [])
+    def generate_report(self, content: List[str], file_name: str, folder_id:  str):
+        # Generate blank file 
+        try:
+             file_id = self._create_empty_file(file_name, folder_id)
+             if file_id is None:  # Add this check
+                 print("Failed to create file - cannot proceed with report generation")
+                 return
+        except Exception as error:
+             print(f"An error occurred: {error}")
+             return
+        try:
+            request = [
+                {
+                    "insertText": {
+                    "endOfSegmentLocation": {},
+                    "text": f"{line}\n"
+                    }
+                }
+                for line in content
+            ]
+            self.docs_service.documents().batchUpdate(
+                documentId=file_id,
+                body={'requests': request}).execute()
+            return
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return
 
-        for file in files:
-            print(f"Deleting file: {file['name']} (ID: {file['id']})")
-            self.drive_service.files().delete(fileId=file["id"]).execute()
+    #def clean_files(self):
+    #    results = self.drive_service.files().list(q="'me' in owners").execute()
+    #    files = results.get("files", [])
+
+    #    for file in files:
+    #        print(f"Deleting file: {file['name']} (ID: {file['id']})")
+    #        self.drive_service.files().delete(fileId=file["id"]).execute()
