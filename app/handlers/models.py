@@ -1,11 +1,6 @@
 from pydantic import BaseModel
 from typing import List
 
-class SlackChallengeRequest(BaseModel):
-    type: str
-    token: str
-    challenge: str
-
 class Event(BaseModel):
     type: str
     user: str
@@ -14,7 +9,12 @@ class Event(BaseModel):
     channel: str
     event_ts: str
 
-class EventCallback(BaseModel):
+class SlackChallengeRequest(BaseModel):
+    type: str
+    token: str
+    challenge: str
+
+class SlackEventCallback(BaseModel):
     token: str
     team_id: str
     api_app_id: str
