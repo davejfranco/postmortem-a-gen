@@ -6,79 +6,55 @@ DEFAULT_MODEL_ID = "us.anthropic.claude-opus-4-20250514-v1:0"
 
 POSTMORTEM_SUMMARY_PROMPT = """You are a Site Reliability Engineer tasked with creating postmortem report summaries. 
 
-Given a conversation with timestamps about an incident, please create a concise postmortem report:
+You'll be given a conversation with timestamps about an incident, like this:
+```
+[{'user': 'Dave Franco', 'text': 'Oh shit we're experiencing an issue, 'ts': '2025-07-30 21:00:18'}, 
+{'user': 'Dave Franco', 'text': 'I'm checking servers, it appears there is a lot of request latency', 'ts': '2025-07-30 21:00:47'}, 
+{'user': 'Dave Franco', 'text': 'I'm checking DB', 'ts': '2025-07-30 21:01:00'}, 
+{'user': 'Dave Franco', 'text': 'it seems we have missing indexes', 'ts': '2025-07-30 21:01:18'}]
+```
+Generate a summary report. It needs to contain the following sections:
 
-It needs to contain the following sections:
-1. **Incident Report**: Brief description of what happened
-2. **Impact**: What systems were affected
-3. **Summary**: Key events with timestamps
-4. **Post-Incident Review**: Including sub sections for root cause, recovery summarym prevention measures.
+1. Title: Portmortem Summary (Preview)
+2. Impacted Components
+3. Detailed Timeline
+4. Post Incident Review: Root cause
+5. Secondary Issue: if any
+6. Recovery
+7. Preventive Measures
 
-Example:
-Summary
-Impacted Components:
+Note: translate to english if input in different language
 
-Routing Node A
+To format I want you to follow this instructions.
+- Start Title with `## `
+- Each section with `### `
 
-Gateway B
+As Example:
+## Postmortem Summary (Preview)
+Increase request latency due to missing database indexes
+### Impacted Components:
 
-Core Database C
+- App servers 
+- Database
 
-Monitoring Window: 2025-07-19 14:35:00 → 16:00:00
+### Detailed Timeline
+2025-07-30 21:00:18 - System experiencing request latency 
+2025-07-30 21:00:47 - On-call Engineer checking servers 
+2025-07-30 21:01:00 - On-call Engineer checking Database 
+2025-07-30 21:01:18 - On-call Engineer has identified missing indexes in the Database
 
-
-Detailed Timeline
-14:42:30: Complete packet loss observed on Routing Node A.
-
-14:42:40: Load begins increasing on Gateway B.
-
-14:43:10: Signaling spike on Protocol A and interconnect interfaces.
-
-14:45:30: Partial recovery (40% packet restoration).
-
-14:46:00: Surge in authentication requests (318/AIR); other types decline.
-
-14:47:30: Tunnel creation rate drops.
-
-14:48:00: Gateway B congestion resolved.
-
-14:49:00: Core router hits 2900 msg/s; traffic stabilizes at this peak.
-
-Decision made to follow emergency escalation protocol due to pattern resemblance to prior major incident.
-
-14:54:00: First monitoring alert received.
-
-15:00:00: Ticket created via external support portal (#40645).
-
-15:01:00: External party acknowledges receipt.
-
-15:10:00: Direct call to ensure prioritization; confirmed ongoing.
-
-15:23:00: Joint meeting scheduled with vendor and partners.
-
-15:27:00: Full block applied to device identifier ranges (Protocol B).
-
-15:30:00: All parties present in coordination call.
-
-15:35:00: Debated whether to block Protocol A; ultimately not done.
-
-15:37:00: Begin lifting identifier blocks.
-
-15:45:00: Full unblock completed.
-
-Post-Incident Review
+### Post-Incident Review
 Root Cause:
-Prolonged packet loss on critical transport path.
+Increase request latency due to missing DB indexes
 
-Secondary Issues:
-Transport layer saturation triggered congestion control mechanisms. Although local systems managed load effectively, broader ecosystem responses (e.g., retransmits) necessitated stricter traffic management.
+### Secondary Issues:
 
-Recovery:
-Protocol B traffic blocked/unblocked collaboratively. External partner initiated block prematurely.
 
-Preventative Measures:
-New core database throttling logic deployed and under test—intended to prioritize device onboarding across all regional replicas.
-Please analyze the conversation and provide a structured summary suitable for a postmortem report."""
+### Recovery:
+Add missing indexes
+
+### Preventative Measures:
+Make sure we have index where data is requested frequently"""
 
 
 class BedrockClient:
