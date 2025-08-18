@@ -61,7 +61,7 @@ variable "allowed_cidr_blocks" {
 variable "node_group_instance_types" {
   description = "Instance types for EKS node group"
   type        = list(string)
-  default     = ["t3.medium"]
+  default     = ["t3.large"]
 }
 
 variable "node_group_min_size" {

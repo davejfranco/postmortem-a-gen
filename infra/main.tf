@@ -10,6 +10,8 @@ module "vpc" {
   private_subnets  = var.private_subnet_cidrs
   database_subnets = var.database_subnet_cidrs
 
+  map_public_ip_on_launch = true
+
   enable_nat_gateway = true
   single_nat_gateway = true
   enable_vpn_gateway = false
@@ -54,17 +56,37 @@ resource "aws_ecr_repository" "this" {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 21.0"
 
-  name               = "${var.project_name}"
+  name               = var.project_name
   kubernetes_version = var.cluster_version
 
   vpc_id                       = module.vpc.vpc_id
   subnet_ids                   = module.vpc.private_subnets
   endpoint_public_access       = true
   endpoint_public_access_cidrs = var.allowed_cidr_blocks
+
+  # Enable cluster creator admin permissions
+  enable_cluster_creator_admin_permissions = true
+
+  # Access entries for additional users/roles
+  access_entries = {
+    cluster_creator = {
+      principal_arn = data.aws_caller_identity.current.arn
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 
   addons = {
     coredns = {
@@ -74,6 +96,9 @@ module "eks" {
       most_recent = true
     }
     vpc-cni = {
+      most_recent = true
+    }
+    eks-pod-identity-agent = {
       most_recent = true
     }
   }
@@ -103,5 +128,27 @@ module "eks" {
     Project     = var.project_name
     Terraform   = "true"
   }
+}
+
+
+
+# DNS 
+data "aws_route53_zone" "main" {
+  name = "daveops.sh"
+}
+
+resource "aws_route53_zone" "dev" {
+  name = "dev.daveops.sh"
+}
+
+
+resource "aws_route53_record" "dev_ns" {
+  allow_overwrite = true
+  name            = "dev.daveops.sh"
+  ttl             = 172800
+  type            = "NS"
+  zone_id         = data.aws_route53_zone.main.zone_id
+
+  records = aws_route53_zone.dev.name_servers
 }
 
