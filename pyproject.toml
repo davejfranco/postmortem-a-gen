@@ -12,5 +12,6 @@ dependencies = [
     "google-auth-httplib2>=0.2.0",
     "google-auth-oauthlib>=1.2.2",
     "httpx>=0.28.1",
+    "pydantic-settings>=2.10.1",
     "slack-sdk>=3.36.0",
 ]
