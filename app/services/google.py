@@ -16,8 +16,8 @@ SCOPES = [
 SUBJECT=os.getenv("GOOGLE_SERVICE_ACCOUNT_SUBJECT")
 
 class Docs:
-    def __init__(self, folder_name="Postmortems", credentials=SERVICE_ACCOUNT_FILE):
-        self.folder_name = folder_name
+    def __init__(self, folder_id: str, credentials: str):
+        self.folder_id = folder_id
         self.credentials = service_account.Credentials.from_service_account_file(
             credentials, scopes=SCOPES, subject=SUBJECT
         )
@@ -25,12 +25,12 @@ class Docs:
         self.drive_service = build("drive", "v3", credentials=self.credentials)
         self.docs_service = build("docs", "v1", credentials=self.credentials)
 
-    def _create_empty_file(self, file_name: str, folder_id: str):
+    def _create_empty_file(self, file_name: str):
         """This creates an empty file for the report in the specified folder."""
         file_metadata = {
             "name": file_name,
             "mimeType": "application/vnd.google-apps.document",
-            "parents": [folder_id],
+            "parents": [self.folder_id],
         }
 
         try:
@@ -41,10 +41,10 @@ class Docs:
             return
 
 
-    def generate_report(self, content: List[str], file_name: str, folder_id:  str):
+    def generate_report(self, content: List[str], file_name: str) -> str | None:
         # Generate blank file 
         try:
-             file_id = self._create_empty_file(file_name, folder_id)
+             file_id = self._create_empty_file(file_name)
              if file_id is None:  # Add this check
                  print("Failed to create file - cannot proceed with report generation")
                  return
@@ -56,7 +56,7 @@ class Docs:
                 {
                     "insertText": {
                     "endOfSegmentLocation": {},
-                    "text": f"{line}\n"
+                    "text": f"{line}"
                     }
                 }
                 for line in content
@@ -68,11 +68,3 @@ class Docs:
         except HttpError as error:
             print(f"An error occurred: {error}")
             return
-
-    #def clean_files(self):
-    #    results = self.drive_service.files().list(q="'me' in owners").execute()
-    #    files = results.get("files", [])
-
-    #    for file in files:
-    #        print(f"Deleting file: {file['name']} (ID: {file['id']})")
-    #        self.drive_service.files().delete(fileId=file["id"]).execute()

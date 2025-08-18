@@ -54,13 +54,17 @@ class Slack:
             print(f"Error reading thread: {e.response['error']}")
             return None
 
-    def get_user_info(self, user_id: str) -> Optional[Dict[str, Any]]:
+    def get_user_info(self, user_id: str) -> Optional[str]:
         """Get User information by user ID"""
         try:
-            return self.client.users_info(user=user_id).get("user")["real_name"]
+            response = self.client.users_info(user=user_id)
+            user_data = response.get("user")
+            if user_data:
+                return user_data.get("real_name")
+            return None
         except SlackApiError as e:
             print(f"Error getting user info: {e.response['error']}")
-            return "Unknown User"
+            return None
 
     def human_readable_conversation(self, slack_thread_conversion):
         pretty_conversation = []
