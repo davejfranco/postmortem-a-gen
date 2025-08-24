@@ -2,16 +2,17 @@
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from typing import Optional, List, Dict, Any
+from slack_sdk.web import SlackResponse
 from app.utils import convert_timestamp_to_readable
 
 
 class Slack:
-    def __init__(self, channel_id: str, slack_bot_token: str) -> None:
+    def __init__(self, channel_id: str, slack_bot_token: str):
         self.channel_id = channel_id
         self.slack_bot_token = slack_bot_token
         self.client = WebClient(token=self.slack_bot_token)
 
-    def publish_message(self, text: str) -> Optional[Dict[str, Any]]:
+    def publish_message(self, text: str) -> Optional[SlackResponse]:
         """Send a message to the channel"""
         try:
             response = self.client.chat_postMessage(channel=self.channel_id, text=text)
@@ -39,8 +40,10 @@ class Slack:
                 response = self.client.conversations_replies(
                     channel=self.channel_id, ts=thread_ts, cursor=cursor
                 )
-
-                all_messages.extend(response["messages"])
+                
+                messages = response.get("messages")
+                if messages:
+                    all_messages.extend(messages)
 
                 if not response.get("has_more", False):
                     break
