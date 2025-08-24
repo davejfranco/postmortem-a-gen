@@ -2,8 +2,6 @@ import boto3
 from botocore.exceptions import ClientError
 
 
-DEFAULT_MODEL_ID = "us.anthropic.claude-opus-4-20250514-v1:0"
-
 POSTMORTEM_SUMMARY_PROMPT = """You are a Site Reliability Engineer tasked with creating postmortem report summaries. 
 
 You'll be given a conversation with timestamps about an incident, like this:
@@ -58,7 +56,7 @@ Make sure we have index where data is requested frequently"""
 
 
 class Bedrock:
-    def __init__(self, aws_profile, region_name="us-east-1", model_id=DEFAULT_MODEL_ID):
+    def __init__(self, aws_profile, region_name, model_id):
         self.session = boto3.Session(profile_name=aws_profile, region_name=region_name)
         self.client = self.session.client("bedrock-runtime")
         self.model_id = model_id

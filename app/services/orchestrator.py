@@ -41,6 +41,8 @@ class Orchestrator:
                 doc_title = f"{today} - Postmortem(preview)"
                 self.google.generate_report(summary, doc_title)
                 return
+            except Exception as e:
+                PostmortemError(f"failed to generate report document: {e}")
         except PostmortemError:
             raise
         except Exception as e:

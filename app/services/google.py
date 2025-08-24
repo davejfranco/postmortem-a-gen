@@ -13,7 +13,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/documents.readonly",
 ]
 
-SUBJECT=os.getenv("GOOGLE_SERVICE_ACCOUNT_SUBJECT")
+SUBJECT=os.environ.get("GOOGLE_SERVICE_ACCOUNT_SUBJECT", "")
 
 class Docs:
     def __init__(self, folder_id: str, credentials: str):
