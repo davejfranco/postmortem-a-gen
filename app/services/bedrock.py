@@ -57,7 +57,7 @@ Add missing indexes
 Make sure we have index where data is requested frequently"""
 
 
-class BedrockClient:
+class Bedrock:
     def __init__(self, aws_profile, region_name="us-east-1", model_id=DEFAULT_MODEL_ID):
         self.session = boto3.Session(profile_name=aws_profile, region_name=region_name)
         self.client = self.session.client("bedrock-runtime")
