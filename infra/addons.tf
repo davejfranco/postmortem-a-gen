@@ -6,9 +6,9 @@ module "external_secrets_pod_identity" {
 
   name = "external-secrets"
 
-  attach_external_secrets_policy     = true
+  attach_external_secrets_policy        = true
   external_secrets_secrets_manager_arns = ["arn:aws:secretsmanager:*:*:secret:*"]
-  
+
   associations = {
     postmortem-eks = {
       cluster_name    = module.eks.cluster_name
@@ -67,7 +67,6 @@ resource "helm_release" "external_secrets" {
     module.external_secrets_pod_identity
   ]
 }
-
 # ClusterSecretStore for AWS Secrets Manager
 resource "kubectl_manifest" "cluster_secret_store" {
   yaml_body = yamlencode({
@@ -129,3 +128,63 @@ resource "kubectl_manifest" "cluster_secret_store" {
 #  ]
 #}
 
+# external-dns
+module "external_dns_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "v2.0.0"
+
+  name = "external-dns"
+
+  attach_external_dns_policy    = true
+  external_dns_hosted_zone_arns = [aws_route53_zone.dev.arn]
+
+  tags = {
+    Environment = "demo"
+  }
+}
+
+resource "helm_release" "external_dns" {
+  name             = "external-dns"
+  repository       = "https://kubernetes-sigs.github.io/external-dns/"
+  chart            = "external-dns"
+  version          = "1.18.0" # Latest stable version
+  namespace        = "external-dns"
+  create_namespace = true
+
+  values = [
+    yamlencode({
+      serviceAccount = {
+        create = true
+        name   = "external-dns"
+        annotations = {
+          "eks.amazonaws.com/role-arn" = module.external_dns_pod_identity.iam_role_arn
+        }
+      }
+
+      provider = "aws"
+      aws = {
+        region = var.aws_region
+      }
+
+      txtOwnerId = "postmortem"
+
+      domainFilters = [aws_route53_zone.dev.name]
+
+      # Resource limits
+      resources = {
+        limits = {
+          memory = "128Mi"
+        }
+        requests = {
+          cpu    = "10m"
+          memory = "32Mi"
+        }
+      }
+
+    })
+  ]
+
+  depends_on = [
+    module.external_dns_pod_identity
+  ]
+}
