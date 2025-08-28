@@ -7,12 +7,12 @@ module "external_secrets_pod_identity" {
   name = "external-secrets"
 
   attach_external_secrets_policy     = true
-  external_secrets_create_permission = true
-
+  external_secrets_secrets_manager_arns = ["arn:aws:secretsmanager:*:*:secret:*"]
+  
   associations = {
     postmortem-eks = {
       cluster_name    = module.eks.cluster_name
-      namespace       = "external-secrets-system"
+      namespace       = "external-secrets"
       service_account = "external-secrets"
     }
   }
@@ -27,7 +27,7 @@ resource "helm_release" "external_secrets" {
   repository       = "https://charts.external-secrets.io"
   chart            = "external-secrets"
   version          = "0.19.2" # Latest stable version
-  namespace        = "external-secrets-system"
+  namespace        = "external-secrets"
   create_namespace = true
 
   values = [
@@ -40,22 +40,9 @@ resource "helm_release" "external_secrets" {
         }
       }
 
-      # Security context for pods
-      securityContext = {
-        fsGroup = 65534
-      }
-
-      # Pod security context
-      podSecurityContext = {
-        runAsNonRoot = true
-        runAsUser    = 65534
-        runAsGroup   = 65534
-      }
-
       # Resource limits
       resources = {
         limits = {
-          cpu    = "100m"
           memory = "128Mi"
         }
         requests = {
