@@ -188,3 +188,90 @@ resource "helm_release" "external_dns" {
     module.external_dns_pod_identity
   ]
 }
+
+# cert-manager
+module "cert_manager_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "v2.0.0"
+
+  name = "cert-manager"
+
+  attach_cert_manager_policy    = true
+  cert_manager_hosted_zone_arns = [aws_route53_zone.dev.arn]
+
+  tags = {
+    Environment = "demo"
+  }
+}
+
+resource "helm_release" "cert_manager" {
+  name             = "cert-manager"
+  repository       = "https://charts.jetstack.io"
+  chart            = "cert-manager"
+  version          = "1.18.2" # Latest stable version
+  namespace        = "cert-manager"
+  create_namespace = true
+
+  values = [
+    yamlencode({
+      serviceAccount = {
+        create = true
+        name   = "cert-manager"
+        annotations = {
+          "eks.amazonaws.com/role-arn" = module.cert_manager_pod_identity.iam_role_arn
+        }
+      }
+
+      installCRDs = true
+
+      # Resource limits
+      resources = {
+        limits = {
+          memory = "128Mi"
+        }
+        requests = {
+          cpu    = "10m"
+          memory = "32Mi"
+        }
+      }
+
+    })
+  ]
+
+  depends_on = [
+    module.cert_manager_pod_identity
+  ]
+}
+
+# ClusterIssuer for Let's Encrypt
+resource "kubectl_manifest" "letsencrypt_cluster_issuer" {
+  yaml_body = yamlencode({
+    apiVersion = "cert-manager.io/v1"
+    kind       = "ClusterIssuer"
+    metadata = {
+      name = "letsencrypt-prod"
+    }
+    spec = {
+      acme = {
+        server = "https://acme-v02.api.letsencrypt.org/directory"
+        email  = "admin@daveops.sh"
+        privateKeySecretRef = {
+          name = "letsencrypt-prod"
+        }
+        solvers = [
+          {
+            dns01 = {
+              route53 = {
+                region = var.aws_region
+              }
+            }
+          }
+        ]
+      }
+    }
+  })
+
+  depends_on = [
+    helm_release.cert_manager
+  ]
+}
