@@ -17,7 +17,7 @@ def get_slack_service():
 
 
 def get_google_service():
-    return Docs(settings.google_folder_id, settings.google_credentials)
+    return Docs(settings)
 
 
 def get_bedrock_service():
