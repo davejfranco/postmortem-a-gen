@@ -1,3 +1,5 @@
+data "aws_availability_zones" "available" { state = "available" }
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
@@ -5,10 +7,9 @@ module "vpc" {
   name = var.project_name
   cidr = var.vpc_cidr
 
-  azs              = var.availability_zones
   public_subnets   = var.public_subnet_cidrs
   private_subnets  = var.private_subnet_cidrs
-  database_subnets = var.database_subnet_cidrs
+  azs              = data.aws_availability_zones.available.names
 
   map_public_ip_on_launch = true
 
@@ -117,3 +118,23 @@ resource "aws_route53_record" "dev_ns" {
   records = aws_route53_zone.dev.name_servers
 }
 
+# Secrets
+resource "aws_secretsmanager_secret" "slack" {
+  name = "${var.environment}-${var.project_name}/slack"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "slack" {
+  secret_id = aws_secretsmanager_secret.slack.id
+  secret_string = jsonencode(var.slack_secrets)
+}
+
+resource "aws_secretsmanager_secret" "google" {
+  name = "${var.environment}-${var.project_name}/google"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "google" {
+  secret_id = aws_secretsmanager_secret.google.id
+  secret_string = jsonencode(var.google_secrets)
+}

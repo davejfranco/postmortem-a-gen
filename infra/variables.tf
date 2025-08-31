@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "AWS region"
   type        = string
-  default     = "us-west-2"
+  default     = "eu-west-1"
 }
 
 variable "environment" {
@@ -40,12 +40,6 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.10.0/24", "10.0.20.0/24"]
 }
 
-variable "database_subnet_cidrs" {
-  description = "CIDR blocks for database subnets"
-  type        = list(string)
-  default     = ["10.0.100.0/24", "10.0.200.0/24"]
-}
-
 variable "cluster_version" {
   description = "Kubernetes version for EKS cluster"
   type        = string
@@ -80,4 +74,54 @@ variable "node_group_desired_size" {
   description = "Desired number of nodes in the node group"
   type        = number
   default     = 2
+}
+
+variable "slack_secrets" {
+  description = "slack credentials"
+  type = object({
+    SLACK_BOT_TOKEN      = string
+    SLACK_SIGNING_SECRET = string
+    SLACK_CHANNEL_ID     = string
+  })
+  default = {
+    SLACK_BOT_TOKEN      = ""
+    SLACK_SIGNING_SECRET = ""
+    SLACK_CHANNEL_ID     = ""
+  }
+}
+
+variable "google_secrets" {
+  description = "google secrets"
+  type = object({
+    GOOGLE_SERVICE_ACCOUNT_SUBJECT = string
+    GOOGLE_FOLDER_ID               = string
+    GOOGLE_CREDENTIALS_FILE        = string
+    # To generate the credentials.json file
+    GOOGLE_ACCESS_TYPE                 = string
+    GOOGLE_PROJECT_ID                  = string
+    GOOGLE_PRIVATE_KEY_ID              = string
+    GOOGLE_PRIVATE_KEY                 = string
+    GOOGLE_CLIENT_EMAIL                = string
+    GOOGLE_CLIENT_ID                   = string
+    GOOGLE_AUTH_URI                    = string
+    GOOGLE_TOKEN_URI                   = string
+    GOOGLE_AUTH_PROVIDER_x509_CERT_URL = string
+    GOOGLE_UNIVERSE_DOMAIN             = string
+  })
+  default = {
+    GOOGLE_SERVICE_ACCOUNT_SUBJECT = ""
+    GOOGLE_FOLDER_ID               = ""
+    GOOGLE_CREDENTIALS_FILE        = ""
+    # To generate the credentials.json file
+    GOOGLE_ACCESS_TYPE                 = ""
+    GOOGLE_PROJECT_ID                  = ""
+    GOOGLE_PRIVATE_KEY_ID              = ""
+    GOOGLE_PRIVATE_KEY                 = ""
+    GOOGLE_CLIENT_EMAIL                = ""
+    GOOGLE_CLIENT_ID                   = ""
+    GOOGLE_AUTH_URI                    = ""
+    GOOGLE_TOKEN_URI                   = ""
+    GOOGLE_AUTH_PROVIDER_x509_CERT_URL = ""
+    GOOGLE_UNIVERSE_DOMAIN             = ""
+  }
 }
