@@ -43,11 +43,13 @@ def create_google_credentials_file(settings, file_path: str = "/tmp") -> str:
 class Docs:
     def __init__(self, settings):
         self.folder_id = settings.google_folder_id
-        
+
         credentials_path = create_google_credentials_file(settings)
-        
+
         self.credentials = service_account.Credentials.from_service_account_file(
-            credentials_path, scopes=SCOPES, subject=settings.google_service_account_subject
+            credentials_path,
+            scopes=SCOPES,
+            subject=settings.google_service_account_subject,
         )
 
         self.drive_service = build("drive", "v3", credentials=self.credentials)
