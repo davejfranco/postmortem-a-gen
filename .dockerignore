@@ -1,0 +1,7 @@
+# Ignore everything
+*
+
+# Include only necessary files
+!app/
+!requirements.txt
+
