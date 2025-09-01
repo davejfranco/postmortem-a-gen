@@ -36,7 +36,7 @@ module "vpc" {
 }
 
 resource "aws_ecr_repository" "this" {
-  name                 = "${var.project_name}-${var.environment}"
+  name                 = "${var.project_name}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
