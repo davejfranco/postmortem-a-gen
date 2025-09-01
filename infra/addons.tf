@@ -16,6 +16,7 @@ module "external_secrets_pod_identity" {
       service_account = "external-secrets"
     }
   }
+
   tags = {
     Environment = "demo"
   }
@@ -138,6 +139,14 @@ module "external_dns_pod_identity" {
   attach_external_dns_policy    = true
   external_dns_hosted_zone_arns = [aws_route53_zone.dev.arn]
 
+  associations = {
+    postmortem-eks = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "external-dns"
+      service_account = "external-dns"
+    }
+  }
+
   tags = {
     Environment = "demo"
   }
@@ -199,6 +208,14 @@ module "cert_manager_pod_identity" {
   attach_cert_manager_policy    = true
   cert_manager_hosted_zone_arns = [aws_route53_zone.dev.arn]
 
+  associations = {
+    postmortem-eks = {
+      cluster_name    = module.eks.cluster_name
+      namespace       = "cert-manager"
+      service_account = "cert-manager"
+    }
+  }
+  
   tags = {
     Environment = "demo"
   }
