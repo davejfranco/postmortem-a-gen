@@ -17,7 +17,7 @@ SCOPES = [
 SUBJECT = os.environ.get("GOOGLE_SERVICE_ACCOUNT_SUBJECT", "")
 
 
-def create_google_credentials_file(settings, file_path: str = "/tmp") -> str:
+def create_google_credentials_file(settings, file_path: str = "/app") -> str:
     """Create Google credentials JSON file from Settings object."""
     credentials = {
         "type": settings.google_access_type,
