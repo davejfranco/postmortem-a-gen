@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postmortems-reports
+  namespace: default
+  labels:
+    app: postmortems-reports
+    environment: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: postmortems-reports
+  template:
+    metadata:
+      labels:
+        app: postmortems-reports
+        environment: dev
+    spec:
+      serviceAccountName: postmortems-reports-sa
+      containers:
+      - name: postmortems-reports
+        image: 444106639146.dkr.ecr.eu-west-1.amazonaws.com/postmortems-reports:latest
+        ports:
+        - containerPort: 8000
+          protocol: TCP
+        env:
+        - name: AWS_REGION
+          value: "eu-west-1"
+        - name: ENVIRONMENT
+          value: "dev"
+        envFrom:
+        - secretRef:
+            name: slack-secrets
+        - secretRef:
+            name: google-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
