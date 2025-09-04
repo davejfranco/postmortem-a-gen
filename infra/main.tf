@@ -7,9 +7,9 @@ module "vpc" {
   name = var.project_name
   cidr = var.vpc_cidr
 
-  public_subnets   = var.public_subnet_cidrs
-  private_subnets  = var.private_subnet_cidrs
-  azs              = data.aws_availability_zones.available.names
+  public_subnets  = var.public_subnet_cidrs
+  private_subnets = var.private_subnet_cidrs
+  azs             = data.aws_availability_zones.available.names
 
   map_public_ip_on_launch = true
 
@@ -36,7 +36,7 @@ module "vpc" {
 }
 
 resource "aws_ecr_repository" "this" {
-  name                 = "${var.project_name}"
+  name                 = var.project_name
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -120,21 +120,21 @@ resource "aws_route53_record" "dev_ns" {
 
 # Secrets
 resource "aws_secretsmanager_secret" "slack" {
-  name = "${var.environment}-${var.project_name}/slack"
+  name                    = "${var.environment}-${var.project_name}/slack"
   recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "slack" {
-  secret_id = aws_secretsmanager_secret.slack.id
+  secret_id     = aws_secretsmanager_secret.slack.id
   secret_string = jsonencode(var.slack_secrets)
 }
 
 resource "aws_secretsmanager_secret" "google" {
-  name = "${var.environment}-${var.project_name}/google"
+  name                    = "${var.environment}-${var.project_name}/google"
   recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "google" {
-  secret_id = aws_secretsmanager_secret.google.id
+  secret_id     = aws_secretsmanager_secret.google.id
   secret_string = jsonencode(var.google_secrets)
 }

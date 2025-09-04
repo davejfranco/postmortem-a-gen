@@ -97,31 +97,33 @@ variable "google_secrets" {
     GOOGLE_FOLDER_ID               = string
     GOOGLE_CREDENTIALS_FILE        = string
     # To generate the credentials.json file
-    GOOGLE_ACCESS_TYPE                 = string
-    GOOGLE_PROJECT_ID                  = string
-    GOOGLE_PRIVATE_KEY_ID              = string
-    GOOGLE_PRIVATE_KEY                 = string
-    GOOGLE_CLIENT_EMAIL                = string
-    GOOGLE_CLIENT_ID                   = string
-    GOOGLE_AUTH_URI                    = string
-    GOOGLE_TOKEN_URI                   = string
-    GOOGLE_AUTH_PROVIDER_x509_CERT_URL = string
-    GOOGLE_UNIVERSE_DOMAIN             = string
+    GOOGLE_ACCESS_TYPE            = string
+    GOOGLE_PROJECT_ID             = string
+    GOOGLE_PRIVATE_KEY_ID         = string
+    GOOGLE_PRIVATE_KEY            = string
+    GOOGLE_CLIENT_EMAIL           = string
+    GOOGLE_CLIENT_ID              = string
+    GOOGLE_AUTH_URI               = string
+    GOOGLE_TOKEN_URI              = string
+    GOOGLE_AUTH_PROVIDER_CERT_URL = string
+    GOOGLE_CLIENT_CERT_URL        = string
+    GOOGLE_UNIVERSE_DOMAIN        = string
   })
   default = {
     GOOGLE_SERVICE_ACCOUNT_SUBJECT = ""
     GOOGLE_FOLDER_ID               = ""
     GOOGLE_CREDENTIALS_FILE        = ""
     # To generate the credentials.json file
-    GOOGLE_ACCESS_TYPE                 = ""
-    GOOGLE_PROJECT_ID                  = ""
-    GOOGLE_PRIVATE_KEY_ID              = ""
-    GOOGLE_PRIVATE_KEY                 = ""
-    GOOGLE_CLIENT_EMAIL                = ""
-    GOOGLE_CLIENT_ID                   = ""
-    GOOGLE_AUTH_URI                    = ""
-    GOOGLE_TOKEN_URI                   = ""
-    GOOGLE_AUTH_PROVIDER_x509_CERT_URL = ""
-    GOOGLE_UNIVERSE_DOMAIN             = ""
+    GOOGLE_ACCESS_TYPE            = ""
+    GOOGLE_PROJECT_ID             = ""
+    GOOGLE_PRIVATE_KEY_ID         = ""
+    GOOGLE_PRIVATE_KEY            = ""
+    GOOGLE_CLIENT_EMAIL           = ""
+    GOOGLE_CLIENT_ID              = ""
+    GOOGLE_AUTH_URI               = ""
+    GOOGLE_TOKEN_URI              = ""
+    GOOGLE_AUTH_PROVIDER_CERT_URL = ""
+    GOOGLE_CLIENT_CERT_URL        = ""
+    GOOGLE_UNIVERSE_DOMAIN        = ""
   }
 }
