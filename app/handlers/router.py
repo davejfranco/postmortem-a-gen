@@ -1,7 +1,8 @@
+import os
 from fastapi import Depends
 from fastapi import APIRouter, status
 from app.services import slack
-from app.utils import Settings
+from app.utils import Settings, create_google_credentials_file
 from app.services.slack import Slack
 from app.services.google import Docs
 from app.services.bedrock import Bedrock
@@ -10,6 +11,7 @@ from .models import SlackChallengeRequest, SlackEventCallback
 
 settings = Settings()
 router = APIRouter()
+credentials_path = create_google_credentials_file(settings, os.getcwd())
 
 
 def get_slack_service():
@@ -17,7 +19,7 @@ def get_slack_service():
 
 
 def get_google_service():
-    return Docs(settings)
+    return Docs(settings, credentials_path)
 
 
 def get_bedrock_service():

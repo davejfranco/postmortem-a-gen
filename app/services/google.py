@@ -41,13 +41,17 @@ def create_google_credentials_file(settings, file_path: str = "/app") -> str:
 
 
 class Docs:
-    def __init__(self, settings):
+    def __init__(self, settings, credentials_path: str):
         self.folder_id = settings.google_folder_id
+        self.credentials_path = credentials_path
 
-        credentials_path = create_google_credentials_file(settings)
+        # print(f"Creating creadentials file at {os.path.join(file_path, "credentials.json")}")
+        # credentials_path = create_google_credentials_file(settings, file_path)
+
+        # print(f"credentials file created at {credentials_path}")
 
         self.credentials = service_account.Credentials.from_service_account_file(
-            credentials_path,
+            self.credentials_path,
             scopes=SCOPES,
             subject=settings.google_service_account_subject,
         )

@@ -2,8 +2,36 @@ import os
 import json
 from datetime import datetime
 from pydantic_settings import BaseSettings
-
 from app.services import google
+
+def convert_timestamp_to_readable(
+    timestamp: str, format: str = "%Y-%m-%d %H:%M:%S"
+) -> str:
+    ts_float = float(timestamp)
+    dt = datetime.fromtimestamp(ts_float)
+    return dt.strftime(format)
+
+def create_google_credentials_file(settings, file_path: str = "/app") -> str:
+    """Create Google credentials JSON file from Settings object."""
+    credentials = {
+        "type": settings.google_access_type,
+        "project_id": settings.google_project_id,
+        "private_key_id": settings.google_private_key_id,
+        "private_key": settings.google_private_key.replace("\\n", "\n"),
+        "client_email": settings.google_client_email,
+        "client_id": settings.google_client_id,
+        "auth_uri": settings.google_auth_uri,
+        "token_uri": settings.google_token_uri,
+        "auth_provider_x509_cert_url": settings.google_auth_provider_cert_url,
+        "client_x509_cert_url": settings.google_client_cert_url,
+        "universe_domain": settings.google_universe_domain,
+    }
+
+    file_full_path = os.path.join(file_path, "credentials.json")
+    with open(file_full_path, "w") as f:
+        json.dump(credentials, f, indent=2)
+
+    return file_full_path
 
 
 class Settings(BaseSettings):
@@ -34,15 +62,8 @@ class Settings(BaseSettings):
     google_universe_domain: str = os.environ.get(
         "GOOGLE_UNIVERSE_DOMAIN", "googleapis.com"
     )
-    google_credentials: str = os.environ.get(
-        "GOOGLE_CREDENTIALS_FILE", "/app/credentials.json"
+    google_credentials_path: str = os.environ.get(
+        "GOOGLE_CREDENTIALS_PATH", "/app"
     )
 
 
-
-def convert_timestamp_to_readable(
-    timestamp: str, format: str = "%Y-%m-%d %H:%M:%S"
-) -> str:
-    ts_float = float(timestamp)
-    dt = datetime.fromtimestamp(ts_float)
-    return dt.strftime(format)
