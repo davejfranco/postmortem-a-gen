@@ -1,4 +1,5 @@
 import boto3
+from typing import Optional
 from botocore.exceptions import ClientError
 
 
@@ -56,8 +57,11 @@ Make sure we have index where data is requested frequently"""
 
 
 class Bedrock:
-    def __init__(self, aws_profile, region_name, model_id):
-        self.session = boto3.Session(profile_name=aws_profile, region_name=region_name)
+    def __init__(self, model_id: str, aws_profile: Optional[str] = None, region_name: Optional[str] = None):
+        if aws_profile is None:
+            self.session = boto3.Session(region_name=region_name)
+        else:
+            self.session = boto3.Session(profile_name=aws_profile, region_name=region_name)
         self.client = self.session.client("bedrock-runtime")
         self.model_id = model_id
 

@@ -24,7 +24,9 @@ def get_google_service():
 
 def get_bedrock_service():
     return Bedrock(
-        settings.aws_profile, settings.aws_region, settings.aws_bedrock_model_id
+        settings.aws_bedrock_model_id,
+        settings.aws_profile,
+        settings.aws_region,
     )
 
 

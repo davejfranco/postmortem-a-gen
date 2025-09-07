@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime
 from pydantic_settings import BaseSettings
+from typing import Optional
 from app.services import google
 
 def convert_timestamp_to_readable(
@@ -35,8 +36,9 @@ def create_google_credentials_file(settings, file_path: str = "/app") -> str:
 
 
 class Settings(BaseSettings):
-    aws_region: str = os.environ.get("AWS_REGION", "us-west-2")
-    aws_profile: str = os.environ.get("AWS_PROFILE", "")
+    aws_region: str = os.environ.get("AWS_REGION", "eu-west-1")
+    aws_profile: Optional[str] = os.environ.get("AWS_PROFILE")
+    
     aws_bedrock_model_id: str = os.environ.get(
         "AWS_BEDROCK_MODEL_ID",
         f"{aws_region.split('-')[0]}.anthropic.claude-opus-4-20250514-v1:0",
