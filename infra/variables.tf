@@ -61,13 +61,13 @@ variable "node_group_instance_types" {
 variable "node_group_min_size" {
   description = "Minimum number of nodes in the node group"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 variable "node_group_max_size" {
   description = "Maximum number of nodes in the node group"
   type        = number
-  default     = 3
+  default     = 4
 }
 
 variable "node_group_desired_size" {

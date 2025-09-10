@@ -65,6 +65,7 @@ resource "helm_release" "external_secrets" {
   ]
 
   depends_on = [
+    module.eks,
     module.external_secrets_pod_identity
   ]
 }
@@ -194,6 +195,7 @@ resource "helm_release" "external_dns" {
   ]
 
   depends_on = [
+    module.eks,
     module.external_dns_pod_identity
   ]
 }
@@ -215,7 +217,7 @@ module "cert_manager_pod_identity" {
       service_account = "cert-manager"
     }
   }
-  
+
   tags = {
     Environment = "demo"
   }
@@ -256,6 +258,7 @@ resource "helm_release" "cert_manager" {
   ]
 
   depends_on = [
+    module.eks,
     module.cert_manager_pod_identity
   ]
 }
@@ -289,6 +292,38 @@ resource "kubectl_manifest" "letsencrypt_cluster_issuer" {
   })
 
   depends_on = [
+    helm_release.cert_manager
+  ]
+}
+
+# NGINX Ingress Controller
+resource "helm_release" "nginx_ingress" {
+  name             = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  version          = "4.13.2" # Latest stable version
+  namespace        = "ingress-nginx"
+  create_namespace = true
+
+  values = [
+    yamlencode({
+      controller = {
+        service = {
+          type = "LoadBalancer"
+          annotations = {
+            "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
+            "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
+            "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
+            "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                   = "ip"
+            "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internet-facing"
+          }
+        }
+      }
+    })
+  ]
+
+  depends_on = [
+    module.eks,
     helm_release.cert_manager
   ]
 }
