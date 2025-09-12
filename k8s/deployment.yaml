@@ -20,7 +20,7 @@ spec:
       serviceAccountName: postmortems-reports-sa
       containers:
       - name: postmortems-reports
-        image: 444106639146.dkr.ecr.eu-west-1.amazonaws.com/postmortems-reports:v0.0.2
+        image: 444106639146.dkr.ecr.eu-west-1.amazonaws.com/postmortems-reports:v0.0.6
         ports:
         - containerPort: 8000
           protocol: TCP
@@ -29,6 +29,8 @@ spec:
           value: "eu-west-1"
         - name: ENVIRONMENT
           value: "dev"
+        - name: AWS_BEDROCK_MODEL_ID
+          value: eu.anthropic.claude-sonnet-4-20250514-v1:0
         envFrom:
         - secretRef:
             name: slack-secrets
