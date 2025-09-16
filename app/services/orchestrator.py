@@ -34,7 +34,8 @@ class Orchestrator:
             except (KeyError, IndexError, TypeError) as e:
                 raise PostmortemError(f"AI service returned invalid response: {e}")
             except Exception as e:
-                raise PostmortemError(f"Failed to generate AI summary: {e}")
+                print(self.ai.model_id)
+                raise PostmortemError(f"Failed to generate AI summary: {e}, {self.ai.model_id}")
 
             try:
                 today = date.today().isoformat()

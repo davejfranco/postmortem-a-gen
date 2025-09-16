@@ -1,7 +1,6 @@
 import boto3
 from typing import Optional
-from botocore.exceptions import ClientError
-
+from botocore.exceptions import ClientError, ReadTimeoutError, EndpointConnectionError
 
 POSTMORTEM_SUMMARY_PROMPT = """You are a Site Reliability Engineer tasked with creating postmortem report summaries. 
 
@@ -71,8 +70,14 @@ class Bedrock:
                 modelId=self.model_id,
                 messages=conversation,
                 system=[{"text": POSTMORTEM_SUMMARY_PROMPT}],
+                inferenceConfig={"maxTokens": 512, "temperature": 0.5, "topP": 0.9},
+
             )
             return response["output"]["message"]
+        except ReadTimeoutError as e:
+            raise TimeoutError(f"Bedrock read timed out (increase read_timeout or use streaming): {e}") from e
+        except EndpointConnectionError as e:
+            raise ConnectionError(f"Could not reach Bedrock endpoint (network/VPC/endpoint issue): {e}") from e
         except ClientError as e:
             raise Exception(f"An error occurred: {e.response['Error']['Message']}")
 

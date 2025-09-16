@@ -1,13 +1,12 @@
 import os
-from fastapi import Depends
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, BackgroundTasks, Depends, status
 from app.services import slack
 from app.utils import Settings, create_google_credentials_file
 from app.services.slack import Slack
 from app.services.google import Docs
 from app.services.bedrock import Bedrock
 from app.services.orchestrator import Orchestrator
-from .models import SlackChallengeRequest, SlackEventCallback
+from .models import SlackCommandRequest, SlackCommandResponse, SlackChallengeRequest
 
 settings = Settings()
 router = APIRouter()
@@ -29,7 +28,6 @@ def get_bedrock_service():
         settings.aws_region,
     )
 
-
 def get_orchestrator(
     slack: Slack = Depends(get_slack_service),
     google: Docs = Depends(get_google_service),
@@ -50,11 +48,21 @@ async def slack_event_verification(event: SlackChallengeRequest):
 
 @router.post("/slack/mention", status_code=status.HTTP_200_OK)
 async def slack_event(
-    payload: SlackEventCallback, orchestrator: Orchestrator = Depends(get_orchestrator)
+    #payload: SlackCommandRequest, 
+    request: Request,
+    background: BackgroundTasks,
+    orchestrator: Orchestrator = Depends(get_orchestrator)
 ):
+    form = await request.form()
+    payload = SlackCommandRequest.model_validate(dict(form))
     try:
-        thread_ts = payload.event.ts
-        result = orchestrator.generate_report(thread_ts)
-        return {"status": "success", "data": result}
+        thread_ts = (payload.text or "").strip()
+        #result = orchestrator.generate_report(thread_ts)
+        background.add_task(orchestrator.generate_report, thread_ts)
+        return SlackCommandResponse(
+            text="Postmortem report generation initiated. The report will be available in the specified Google Drive folder shortly."
+        )
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return SlackCommandResponse(
+            text=f"Error generating report, error: {str(e)}"
+        )
