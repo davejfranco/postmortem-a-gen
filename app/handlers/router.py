@@ -56,9 +56,9 @@ async def slack_event(
     form = await request.form()
     payload = SlackCommandRequest.model_validate(dict(form))
     try:
-        thread_ts = (payload.text or "").strip()
+        url = (payload.text or "").strip()
         #result = orchestrator.generate_report(thread_ts)
-        background.add_task(orchestrator.generate_report, thread_ts)
+        background.add_task(orchestrator.generate_report, url)
         return SlackCommandResponse(
             text="Postmortem report generation initiated. The report will be available in the specified Google Drive folder shortly."
         )

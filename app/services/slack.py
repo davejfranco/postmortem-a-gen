@@ -30,17 +30,37 @@ class Slack:
             print(f"Error reading chat history: {e.response['error']}")
             return None
 
-    def get_thread_conversation(self, thread_ts: str) -> Optional[List[Dict[str, Any]]]:
+    def _parse_thread_permalink(self, url: str) -> Optional[str]:
+        """Extract the thread timestamp from a Slack permalink URL"""
+        try:
+            parts = url.split("/")
+            if len(parts) < 2:
+                return None
+            ts_part = parts[-1]  # Get the last part after the last '/'
+            if ts_part.startswith("p"):
+                ts_str = ts_part[1:]  # Remove the leading 'p'
+                if len(ts_str) >= 16:
+                    ts = f"{ts_str[:-6]}.{ts_str[-6:]}"  # Insert the decimal point
+                    return ts
+            return None
+        except Exception as e:
+            print(f"Error parsing permalink: {e}")
+            return None
+
+    def get_thread_conversation(self, url: str) -> Optional[List[Dict[str, Any]]]:
         """Get all messages in a specific thread"""
+        thread_ts = self._parse_thread_permalink(url)
+        if thread_ts is None:
+            raise Exception("Invalid Slack thread URL")
+
         try:
             all_messages = []
-            cursor = None
-
+            "https://daveopsslackdev.slack.com/archives/C098VR4DG9E/p1753902018594989"
             while True:
                 response = self.client.conversations_replies(
-                    channel=self.channel_id, ts=thread_ts, cursor=cursor
+                    channel=self.channel_id, ts=thread_ts
                 )
-                
+
                 messages = response.get("messages")
                 if messages:
                     all_messages.extend(messages)
