@@ -1,4 +1,3 @@
-
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -6,21 +5,17 @@ build/
 dist/
 wheels/
 *.egg-info
-# infra 
-infra/.terraform
-infra/.terraform.lock.hcl 
-infra/terraform.tfstate
-infra/terraform.tfstate.*
-infra/terraform.tfstate.backup
 
 # Infra ignores 
 infra/.terraform 
 infra/.terraform.lock.hcl
 infra/terraform.tfstate
-infra/terraform.tfstate.backup
+infra/terraform.tfstate.*
 infra/.terraform.tfstate.lock.info
+
 # Virtual environments
 .venv
+
 # Secrets 
 credentials.json
 .env
