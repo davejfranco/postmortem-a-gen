@@ -6,6 +6,14 @@ dist/
 wheels/
 *.egg-info
 
+# infra 
+infra/.terraform
+infra/.terraform.lock.hcl 
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/terraform.tfstate.backup
+infra/infrak8s/
+
 # Infra ignores 
 infra/.terraform 
 infra/.terraform.lock.hcl
