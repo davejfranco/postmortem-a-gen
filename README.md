@@ -1,85 +1,139 @@
-# Postmortem Reports Generator
+# Postmortems Reports
 
-A Python tool that uses AWS Bedrock and Claude to automatically generate postmortem report summaries from incident conversations.
+A Slack app that automatically generates postmortem reports from Slack thread conversations using AWS Bedrock AI and saves them to Google Drive.
+
+## Overview
+
+This service listens for Slack slash commands, fetches thread conversations, generates structured postmortem reports using AI, and creates Google Docs in a specified Google Drive folder.
 
 ## Features
 
-- **AWS Bedrock Integration**: Uses Claude 3.5 Sonnet via AWS Bedrock for AI-powered analysis
-- **Postmortem Generation**: Converts incident conversations with timestamps into structured postmortem reports
-- **Flexible Configuration**: Supports custom AWS profiles, regions, and model selection
-- **Structured Output**: Generates reports with timeline, impact analysis, root cause, and action items
+- **Slack Integration**: Slash command interface to trigger postmortem generation from thread URLs
+- **AI-Powered Analysis**: Uses AWS Bedrock to analyze conversation threads and generate structured postmortem reports
+- **Google Drive Export**: Automatically creates and saves reports as Google Docs
+- **Background Processing**: Asynchronous report generation to avoid blocking Slack responses
+- **Health Monitoring**: Built-in health check endpoint for service monitoring
+
+## Architecture
+
+```
+┌──────────┐    Slash Command    ┌─────────────┐
+│  Slack   │ ───────────────────> │   FastAPI   │
+│          │ <─────────────────── │   Service   │
+└──────────┘    Confirmation      └─────────────┘
+                                         │
+                                         │ Background Task
+                                         ▼
+                            ┌────────────────────────┐
+                            │    Orchestrator        │
+                            └────────────────────────┘
+                                    │      │      │
+                        ┌───────────┘      │      └───────────┐
+                        ▼                  ▼                  ▼
+                  ┌─────────┐      ┌──────────┐      ┌─────────────┐
+                  │  Slack  │      │   AWS    │      │   Google    │
+                  │   SDK   │      │ Bedrock  │      │    Docs     │
+                  └─────────┘      └──────────┘      └─────────────┘
+```
+
+## Requirements
+
+- Python 3.13+
+- AWS account with Bedrock access
+- Slack workspace with app configured
+- Google Cloud project with Drive and Docs API enabled
 
 ## Installation
 
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd postmortems-reports
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Usage
-
-### Basic Usage
-
-```python
-from bedrock import BedrockClient
-
-# Initialize client with AWS profile
-client = BedrockClient(aws_profile='your-profile')
-
-# Generate postmortem from incident conversation
-incident_conversation = """
-[2024-01-15 14:30] Alert: Database connection timeout
-[2024-01-15 14:32] Engineer: Investigating connection issues
-[2024-01-15 14:45] Engineer: Found high CPU usage on DB server
-[2024-01-15 15:00] Engineer: Restarted database service, issue resolved
-"""
-
-summary = client.create_postmortem_summary(incident_conversation)
-print(summary)
-```
-
-### Advanced Configuration
-
-```python
-# Custom region and model
-client = BedrockClient(
-    aws_profile='production',
-    region_name='us-west-2',
-    model_id='anthropic.claude-3-haiku-20240307-v1:0'
-)
-
-# Direct chat interface
-conversation = [
-    {"role": "user", "content": [{"text": "Analyze this incident..."}]}
-]
-response = client.chat(conversation)
-```
-
 ## Configuration
 
-### AWS Setup
+The application uses environment variables for configuration. Set the following:
 
-1. Configure AWS credentials with Bedrock access
-2. Ensure your AWS profile has permissions for `bedrock-runtime:InvokeModel`
+### Slack Configuration
+- `SLACK_BOT_TOKEN`: Slack bot OAuth token
+- `SLACK_CHANNEL_ID`: Default channel ID for thread retrieval
 
-### Environment
+### AWS Configuration
+- `AWS_PROFILE`: AWS profile name (optional)
+- `AWS_REGION`: AWS region (e.g., us-east-1)
+- `AWS_BEDROCK_MODEL_ID`: Bedrock model ID to use
 
-- Python 3.8+
-- AWS CLI configured
-- Valid AWS profile with Bedrock permissions
+### Google Configuration
+- `GOOGLE_CREDENTIALS`: JSON string of Google service account credentials
+- `GOOGLE_DRIVE_FOLDER_ID`: Target folder ID for created documents
 
-## Output Format
+See `docs/google-auth.md` for Google authentication setup details.
 
-The postmortem summary includes:
+## Usage
 
-- **Incident Overview**: Brief description of what happened
-- **Timeline**: Key events with timestamps
-- **Impact**: Affected systems and users
-- **Root Cause**: Primary cause identification
-- **Resolution**: How the incident was resolved
-- **Action Items**: Follow-up tasks to prevent recurrence
+### Running Locally
 
-## Files
+```bash
+fastapi dev app/main.py
+```
 
-- `bedrock.py`: Main BedrockClient class and postmortem generation logic
-- `main.py`: Application entry point
-- `slack.py`: Slack integration utilities
+The service will start on `http://localhost:8000`.
+
+### Running with Docker
+
+```bash
+docker build -t postmortems-reports .
+docker run -p 8000:8000 --env-file .env postmortems-reports
+```
+
+### Slack Command
+
+In your Slack workspace, use the configured slash command:
+
+```
+/postmortem <thread_url>
+```
+
+The bot will:
+1. Acknowledge the command
+2. Fetch the thread conversation
+3. Generate an AI-powered postmortem report
+4. Create a Google Doc with the report
+5. Save it to the configured Google Drive folder
+
+## API Endpoints
+
+- `GET /health`: Health check endpoint
+- `POST /slack/event_verification`: Slack URL verification
+- `POST /slack/mention`: Slash command handler
+
+## Deployment
+
+The project includes Kubernetes manifests in the `k8s/` directory and Terraform configuration in the `infra/` directory for AWS infrastructure provisioning.
+
+## Development
+
+### Running Tests
+
+```bash
+pytest
+```
+
+### Project Structure
+
+```
+app/
+├── handlers/       # API routes and request handlers
+├── services/       # Business logic (Slack, Bedrock, Google integrations)
+└── utils/          # Configuration and utilities
+```
+
+## License
+
+MIT License - free to use, modify, and distribute.
